@@ -4,9 +4,13 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.18.3",
   "scripts": {
+    "prepare": "husky",
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "format": "pnpm -r --if-present format",
     "format:check": "pnpm -r --if-present format:check"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }
