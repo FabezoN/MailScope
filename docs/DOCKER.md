@@ -32,6 +32,8 @@ Le `.env` n'est pas commité. Les variables configurées :
 | `api-build` | NestJS compilé (node dist/) | 3000 |
 | `front-dev` | Vite dev server (HMR) | 5173 |
 | `front-build` | Nginx servant le build statique | 80 |
+| `job-runner-dev` | Worker NestJS watch (tsx watch) | - |
+| `job-runner-build` | Worker compilé (node dist/) | - |
 
 ## Commandes
 
@@ -41,7 +43,11 @@ Le `.env` n'est pas commité. Les variables configurées :
 docker compose up
 ```
 
-Lance tous les services par défaut en mode **dev avec watch** — chaque modification dans `src/` redémarre automatiquement le serveur ou déclenche le HMR Vite.
+Lance les services par défaut en mode **dev avec watch** :
+- `api-dev`
+- `job-runner-dev`
+
+Chaque modification dans `src/` redémarre automatiquement le service concerné.
 
 ```bash
 docker compose up --build
@@ -58,7 +64,11 @@ Même chose mais **rebuild les images** avant de démarrer. À utiliser après :
 docker compose --profile build up
 ```
 
-Lance les services compilés (`api-build` + `front-build`). Le front est servi par Nginx sur le port 80. Utile pour vérifier que les builds passent avant un merge.
+Lance les services compilés (TypeScript → JavaScript) :
+- `api-build`
+- `job-runner-build`
+
+Utile pour vérifier que le build passe avant un merge.
 
 ```bash
 docker compose --profile build up --build
@@ -69,10 +79,10 @@ Rebuild les images puis lance les services compilés.
 ### Autres commandes utiles
 
 ```bash
-docker compose down             # arrêter et supprimer les containers
-docker compose logs api-dev     # voir les logs d'un service
-docker compose logs front-dev   # voir les logs du front
-docker compose ps               # état des containers
+docker compose down          # arrêter et supprimer les containers
+docker compose logs api-dev  # voir les logs d'un service
+docker compose logs job-runner-dev
+docker compose ps            # état des containers
 ```
 
 ## Volumes (mode dev)
@@ -82,6 +92,7 @@ En mode dev, le code source est monté en volume — les images n'ont pas besoin
 | Volume local | Chemin dans le container |
 |---|---|
 | `./apps/api/src` | `/app/apps/api/src` |
+| `./apps/job-runner/src` | `/app/apps/job-runner/src` |
 | `./packages` | `/app/packages` |
 | `./apps/front/src` | `/app/apps/front/src` |
 
@@ -95,3 +106,10 @@ VITE_API_URL=http://localhost:3000
 ```
 
 > Les variables Vite doivent commencer par `VITE_` pour être exposées au navigateur.
+
+## Job runner
+
+Le `job-runner` est branché dans le `docker-compose.yml` avec :
+- `job-runner-dev`
+- `job-runner-build`
+

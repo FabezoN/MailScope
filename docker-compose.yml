@@ -65,3 +65,20 @@ services:
       - "80:80"
     profiles:
       - build
+
+  job-runner-dev:
+    build:
+      context: .
+      dockerfile: apps/job-runner/Dockerfile
+      target: dev
+    volumes:
+      - ./apps/job-runner/src:/app/apps/job-runner/src
+      - ./packages:/app/packages
+
+  job-runner-build:
+    build:
+      context: .
+      dockerfile: apps/job-runner/Dockerfile
+      target: build
+    profiles:
+      - build
