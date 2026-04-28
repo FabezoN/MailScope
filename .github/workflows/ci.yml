@@ -23,11 +23,11 @@ jobs:
 
       - name: Create .env
         run: |
-          echo "DB_HOST=db" >> .env
-          echo "DB_PORT=5432" >> .env
-          echo "DB_USERNAME=mailscope" >> .env
-          echo "DB_PASSWORD=mailscope" >> .env
-          echo "DB_NAME=mailscope" >> .env
+          echo "DATABASE_HOST=db" >> .env
+          echo "DATABASE_PORT=5432" >> .env
+          echo "DATABASE_USER=mailscope" >> .env
+          echo "DATABASE_PASSWORD=mailscope" >> .env
+          echo "DATABASE_NAME=mailscope" >> .env
           echo "NODE_ENV=development" >> .env
 
       - name: Build and start containers

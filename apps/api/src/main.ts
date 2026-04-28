@@ -9,27 +9,39 @@ import { Client } from 'pg';
 import { AppModule } from './app.module';
 
 async function ensureDatabase(): Promise<void> {
-  const client = new Client({
-    host: process.env.DATABASE_HOST,
-    port: Number(process.env.DATABASE_PORT),
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: 'postgres',
-  });
+  const maxRetries = 5;
 
-  await client.connect();
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const client = new Client({
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      user: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
+      database: 'postgres',
+    });
 
-  const { rowCount } = await client.query(
-    'SELECT 1 FROM pg_database WHERE datname = $1',
-    [process.env.DATABASE_NAME],
-  );
+    try {
+      await client.connect();
 
-  if (!rowCount) {
-    await client.query(`CREATE DATABASE "${process.env.DATABASE_NAME}"`);
-    Logger.log(`Database "${process.env.DATABASE_NAME}" created`, 'Bootstrap');
+      const { rowCount } = await client.query(
+        'SELECT 1 FROM pg_database WHERE datname = $1',
+        [process.env.DATABASE_NAME],
+      );
+
+      if (!rowCount) {
+        await client.query(`CREATE DATABASE "${process.env.DATABASE_NAME}"`);
+        Logger.log(`Database "${process.env.DATABASE_NAME}" created`, 'Bootstrap');
+      }
+
+      await client.end();
+      return;
+    } catch (err) {
+      await client.end().catch(() => {});
+      if (attempt === maxRetries) throw err;
+      Logger.warn(`DB not ready, retrying in ${attempt * 2}s... (${attempt}/${maxRetries})`, 'Bootstrap');
+      await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
+    }
   }
-
-  await client.end();
 }
 
 async function bootstrap(): Promise<void> {
