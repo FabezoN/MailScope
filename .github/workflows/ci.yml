@@ -23,14 +23,12 @@ jobs:
 
       - name: Create .env
         run: |
-          cat > .env << 'EOF'
-          DATABASE_HOST=db
-          DATABASE_PORT=5432
-          DATABASE_USER=mailscope
-          DATABASE_PASSWORD=mailscope
-          DATABASE_NAME=mailscope
-          NODE_ENV=development
-          EOF
+          echo "DB_HOST=db" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_USERNAME=mailscope" >> .env
+          echo "DB_PASSWORD=mailscope" >> .env
+          echo "DB_NAME=mailscope" >> .env
+          echo "NODE_ENV=development" >> .env
 
       - name: Build and start containers
         run: docker compose up --build -d
