@@ -4,11 +4,13 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@mailscope/utils": ["../../packages/utils/src/index.ts"],
+      "@mailscope/schemas": ["../../packages/schemas/src/index.ts"]
+    }
   }
 }
