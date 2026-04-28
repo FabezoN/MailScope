@@ -1,8 +1,30 @@
+# Dependencies
 node_modules/
-.DS_Store
+
+# Build output
 dist/
 build/
-coverage/
+.next/
+
+# Environment
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+
+# Turbo
+.turbo/

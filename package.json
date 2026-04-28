@@ -2,15 +2,26 @@
   "name": "mailscope",
   "private": true,
   "version": "0.1.0",
+  "description": "MailScope – Email OSINT investigation platform",
   "packageManager": "pnpm@10.18.3",
   "scripts": {
-    "prepare": "husky",
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "format": "pnpm -r --if-present format",
     "format:check": "pnpm -r --if-present format:check"
+    "test": "echo 'No tests yet'",
+    "test:ci": "echo 'No tests yet'"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
-  }
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
+    "eslint": "latest",
+    "eslint-config-prettier": "latest",
+    "husky": "^9.1.7",
+    "prettier": "latest"
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  
 }
