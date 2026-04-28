@@ -1,0 +1,21 @@
+services:
+  api-dev:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: dev
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./packages:/app/packages
+    ports:
+      - "3000:3000"
+
+  api-build:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: build
+    ports:
+      - "3000:3000"
+    profiles:
+      - build
