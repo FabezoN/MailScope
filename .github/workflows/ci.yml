@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
   PNPM_VERSION: "9"
 
 jobs:
@@ -57,12 +57,13 @@ jobs:
       - run: pnpm test:ci
 
       - name: Upload coverage
-        if: always()
+        if: always() && hashFiles('**/coverage/') != ''
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: "**/coverage/"
           retention-days: 7
+          if-no-files-found: ignore
 
   build:
     name: Build

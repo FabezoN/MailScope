@@ -1,0 +1,17 @@
+{
+  "name": "mailscope",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MailScope – Email OSINT investigation platform",
+  "scripts": {
+    "build": "echo 'No packages to build yet'",
+    "lint": "echo 'No lint config yet'",
+    "typecheck": "echo 'No typecheck config yet'",
+    "test": "echo 'No tests yet'",
+    "test:ci": "echo 'No tests yet'"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}
