@@ -2,11 +2,10 @@ name: CI
 
 on:
   push:
-    branches-ignore:
+    branches:
       - main
+      - develop
   pull_request:
-    branches-ignore:
-      - main
     types: [opened, synchronize, reopened]
 
 concurrency:
