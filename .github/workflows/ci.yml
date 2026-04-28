@@ -21,5 +21,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Test CI
-        run: echo "✅ CI lancée correctement sur la branche ${{ github.ref_name }}"
+      - name: Create .env
+        run: |
+          cat > .env << 'EOF'
+          DB_HOST=db
+          DB_PORT=5432
+          DB_USERNAME=mailscope
+          DB_PASSWORD=mailscope
+          DB_NAME=mailscope
+          NODE_ENV=development
+          EOF
+
+      - name: Build and start containers
+        run: docker compose up --build -d
+
+      - name: Wait for API to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "✅ API is ready"
+              exit 0
+            fi
+            echo "Waiting for API... ($i/30)"
+            sleep 2
+          done
+          echo "❌ API did not start in time"
+          docker compose logs
+          exit 1
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
