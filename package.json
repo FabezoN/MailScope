@@ -8,7 +8,7 @@
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "format": "pnpm -r --if-present format",
-    "format:check": "pnpm -r --if-present format:check"
+    "format:check": "pnpm -r --if-present format:check",
     "test": "echo 'No tests yet'",
     "test:ci": "echo 'No tests yet'"
   },
@@ -19,9 +19,9 @@
     "eslint-config-prettier": "latest",
     "husky": "^9.1.7",
     "prettier": "latest"
+  },
   "engines": {
     "node": ">=20",
     "pnpm": ">=9"
-  },
-  
+  }
 }
