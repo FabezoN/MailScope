@@ -11,6 +11,10 @@ RUN pnpm install --frozen-lockfile
 # ---- dev ----
 FROM deps AS dev
 WORKDIR /app/apps/front
+COPY apps/front/index.html ./
+COPY apps/front/public ./public
+COPY apps/front/vite.config.ts ./
+COPY apps/front/tsconfig*.json ./
 CMD ["pnpm", "dev", "--host"]
 
 # ---- build ----
