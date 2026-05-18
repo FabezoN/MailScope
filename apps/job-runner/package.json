@@ -6,7 +6,7 @@
     "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
-    "lint": "eslint --config ../../eslint.config.mjs src --max-warnings=0",
+    "lint": "eslint src --max-warnings=0",
     "test": "echo 'No tests yet'"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.9.2",
     "eslint": "^10.2.1",
     "tsx": "^4.20.6",
