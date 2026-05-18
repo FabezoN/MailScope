@@ -13,13 +13,99 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-ci:
-    name: Test CI
+  build:
+    name: Build global
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+  ci-frontend:
+    name: CI Frontend React/Vite
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter front lint
+
+      - name: Build
+        run: pnpm --filter front build
+
+  ci-job-runner:
+    name: CI Job Runner
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @mailscope/job-runner lint
+
+      - name: Build
+        run: pnpm --filter @mailscope/job-runner build
+
+  ci-osint:
+    name: CI OSINT Service
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Placeholder (osint-service not yet scaffolded)
+        run: echo "osint-service CI — à compléter lors du scaffold"
+
+  ci-api:
+    name: CI API
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Create .env
         run: |
@@ -37,13 +123,13 @@ jobs:
         run: |
           for i in $(seq 1 30); do
             if curl -s http://localhost:3000 > /dev/null; then
-              echo "✅ API is ready"
+              echo "API is ready"
               exit 0
             fi
             echo "Waiting for API... ($i/30)"
             sleep 2
           done
-          echo "❌ API did not start in time"
+          echo "API did not start in time"
           docker compose logs
           exit 1
 
