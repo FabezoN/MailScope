@@ -83,5 +83,28 @@ services:
     profiles:
       - build
 
+  osint-service-dev:
+    build:
+      context: .
+      dockerfile: apps/osint-service/Dockerfile
+      target: dev
+    volumes:
+      - ./apps/osint-service/src:/app/apps/osint-service/src
+      - ./packages:/app/packages
+    ports:
+      - "3001:3001"
+    env_file: .env
+
+  osint-service-build:
+    build:
+      context: .
+      dockerfile: apps/osint-service/Dockerfile
+      target: build
+    ports:
+      - "3001:3001"
+    env_file: .env
+    profiles:
+      - build
+
 volumes:
   postgres_data:
