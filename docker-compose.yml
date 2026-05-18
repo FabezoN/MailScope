@@ -1,22 +1,46 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api-dev:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
       target: dev
+    env_file: .env
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./packages:/app/packages
     ports:
       - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
 
   api-build:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
       target: build
+    env_file: .env
     ports:
       - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
     profiles:
       - build
 

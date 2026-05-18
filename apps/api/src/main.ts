@@ -1,45 +1,70 @@
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-// Le .env est à la racine du monorepo, pas dans apps/api/
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { Client } from 'pg';
 import { AppModule } from './app.module';
 
-/**
- * Crée la base de données si elle n'existe pas encore.
- * On se connecte au db système "postgres" pour exécuter le CREATE DATABASE.
- */
 async function ensureDatabase(): Promise<void> {
-  const client = new Client({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    user: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-    database: 'postgres',
-  });
+  const maxRetries = 5;
 
-  await client.connect();
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const client = new Client({
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      user: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
+      database: 'postgres',
+    });
 
-  const { rowCount } = await client.query(
-    'SELECT 1 FROM pg_database WHERE datname = $1',
-    [process.env.DB_NAME],
-  );
+    try {
+      await client.connect();
 
-  if (!rowCount) {
-    await client.query(`CREATE DATABASE "${process.env.DB_NAME}"`);
+      const { rowCount } = await client.query(
+        'SELECT 1 FROM pg_database WHERE datname = $1',
+        [process.env.DATABASE_NAME],
+      );
+
+      if (!rowCount) {
+        await client.query(`CREATE DATABASE "${process.env.DATABASE_NAME}"`);
+        Logger.log(`Database "${process.env.DATABASE_NAME}" created`, 'Bootstrap');
+      }
+
+      await client.end();
+      return;
+    } catch (err) {
+      await client.end().catch(() => {});
+      if (attempt === maxRetries) throw err;
+      Logger.warn(`DB not ready, retrying in ${attempt * 2}s... (${attempt}/${maxRetries})`, 'Bootstrap');
+      await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
+    }
   }
-
-  await client.end();
 }
 
 async function bootstrap(): Promise<void> {
   await ensureDatabase();
 
   const app = await NestFactory.create(AppModule);
-  await app.listen(3000);
+
+  app.setGlobalPrefix('api/v1');
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  app.enableCors({ origin: process.env.CORS_ORIGIN });
+
+  const port = process.env.API_PORT ?? 3000;
+  await app.listen(port);
+
+  Logger.log(`API running on http://localhost:${port}/api/v1`, 'Bootstrap');
 }
 
 bootstrap();
