@@ -204,12 +204,18 @@ importers:
         specifier: ^7.8.1
         version: 7.8.2
     devDependencies:
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.2.1)
       '@mailscope/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
+      eslint:
+        specifier: ^10.2.1
+        version: 10.2.1
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.17)(typescript@5.9.3)
@@ -222,6 +228,9 @@ importers:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.58.2
+        version: 8.59.1(eslint@10.2.1)(typescript@5.9.3)
 
   packages/schemas: {}
 

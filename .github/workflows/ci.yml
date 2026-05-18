@@ -97,8 +97,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Placeholder (osint-service not yet scaffolded)
-        run: echo "osint-service CI — à compléter lors du scaffold"
+      - name: Lint
+        run: pnpm --filter @mailscope/osint-service lint
+
+      - name: Build
+        run: pnpm --filter @mailscope/osint-service build
 
   ci-api:
     name: CI API
