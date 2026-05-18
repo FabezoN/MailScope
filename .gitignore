@@ -1,4 +1,4 @@
-# Dependencies
+ Dependencies
 node_modules/
 
 # Build output
@@ -10,6 +10,8 @@ build/
 .env
 .env.local
 .env.*.local
+.env.*
+!.env.example
 
 # IDE
 .vscode/

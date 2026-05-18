@@ -30,6 +30,8 @@ Le `.env` n'est pas commité. Les variables configurées :
 | `db` | PostgreSQL 16 | 5432 |
 | `api-dev` | NestJS watch (ts-node-dev) | 3000 |
 | `api-build` | NestJS compilé (node dist/) | 3000 |
+| `front-dev` | Vite dev server (HMR) | 5173 |
+| `front-build` | Nginx servant le build statique | 80 |
 
 ## Commandes
 
@@ -39,7 +41,7 @@ Le `.env` n'est pas commité. Les variables configurées :
 docker compose up
 ```
 
-Lance `db` + `api-dev`. L'API démarre après que PostgreSQL soit healthy (healthcheck automatique).
+Lance tous les services par défaut en mode **dev avec watch** — chaque modification dans `src/` redémarre automatiquement le serveur ou déclenche le HMR Vite.
 
 ```bash
 docker compose up --build
@@ -56,7 +58,7 @@ Même chose mais **rebuild les images** avant de démarrer. À utiliser après :
 docker compose --profile build up
 ```
 
-Lance `db` + `api-build` (TypeScript compilé).
+Lance les services compilés (`api-build` + `front-build`). Le front est servi par Nginx sur le port 80. Utile pour vérifier que les builds passent avant un merge.
 
 ```bash
 docker compose --profile build up --build
@@ -67,11 +69,10 @@ Rebuild les images puis lance les services compilés.
 ### Autres commandes utiles
 
 ```bash
-docker compose down                  # arrêter et supprimer les containers
-docker compose down -v               # idem + supprime le volume postgres_data
-docker compose logs api-dev          # voir les logs d'un service
-docker compose logs -f api-dev       # suivre les logs en temps réel
-docker compose ps                    # état des containers
+docker compose down             # arrêter et supprimer les containers
+docker compose logs api-dev     # voir les logs d'un service
+docker compose logs front-dev   # voir les logs du front
+docker compose ps               # état des containers
 ```
 
 ## Volumes (mode dev)
@@ -82,5 +83,15 @@ En mode dev, le code source est monté en volume — les images n'ont pas besoin
 |---|---|
 | `./apps/api/src` | `/app/apps/api/src` |
 | `./packages` | `/app/packages` |
+| `./apps/front/src` | `/app/apps/front/src` |
 
-Les données PostgreSQL sont persistées dans un volume nommé `postgres_data`.
+## Variables d'environnement (front)
+
+Le service `front-dev` reçoit `VITE_API_URL` via le `docker-compose.yml`.  
+Pour personnaliser, créer un fichier `.env` à la racine ou dans `apps/front/` :
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+> Les variables Vite doivent commencer par `VITE_` pour être exposées au navigateur.

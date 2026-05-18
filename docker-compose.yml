@@ -44,5 +44,24 @@ services:
     profiles:
       - build
 
-volumes:
-  postgres_data:
+  front-dev:
+    build:
+      context: .
+      dockerfile: apps/front/Dockerfile
+      target: dev
+    volumes:
+      - ./apps/front/src:/app/apps/front/src
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+
+  front-build:
+    build:
+      context: .
+      dockerfile: apps/front/Dockerfile
+      target: prod
+    ports:
+      - "80:80"
+    profiles:
+      - build
