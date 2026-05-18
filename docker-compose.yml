@@ -82,3 +82,6 @@ services:
       target: build
     profiles:
       - build
+
+volumes:
+  postgres_data:
