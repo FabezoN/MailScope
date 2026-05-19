@@ -4,16 +4,76 @@ services:
     environment:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER}"]
       interval: 5s
       timeout: 5s
       retries: 10
+
+  auth-service-dev:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      target: dev
+    env_file: .env
+    volumes:
+      - ./apps/auth-service/src:/app/apps/auth-service/src
+      - ./packages:/app/packages
+    ports:
+      - "3002:3002"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  auth-service-build:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      target: build
+    env_file: .env
+    ports:
+      - "3002:3002"
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - build
+
+  investigations-service-dev:
+    build:
+      context: .
+      dockerfile: apps/investigations-service/Dockerfile
+      target: dev
+    env_file: .env
+    volumes:
+      - ./apps/investigations-service/src:/app/apps/investigations-service/src
+      - ./packages:/app/packages
+    ports:
+      - "3003:3003"
+    depends_on:
+      db:
+        condition: service_healthy
+      osint-service-dev:
+        condition: service_started
+
+  investigations-service-build:
+    build:
+      context: .
+      dockerfile: apps/investigations-service/Dockerfile
+      target: build
+    env_file: .env
+    ports:
+      - "3003:3003"
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - build
 
   gateway-dev:
     build:
@@ -27,9 +87,9 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      db:
-        condition: service_healthy
-      osint-service-dev:
+      auth-service-dev:
+        condition: service_started
+      investigations-service-dev:
         condition: service_started
 
   gateway-build:
@@ -40,9 +100,6 @@ services:
     env_file: .env
     ports:
       - "3000:3000"
-    depends_on:
-      db:
-        condition: service_healthy
     profiles:
       - build
 
@@ -76,6 +133,7 @@ services:
     volumes:
       - ./apps/job-runner/src:/app/apps/job-runner/src
       - ./packages:/app/packages
+    env_file: .env
 
   job-runner-build:
     build:

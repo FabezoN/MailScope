@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
-import { OsintClientModule } from '../osint-client/osint-client.module';
+import { HttpModule } from '@nestjs/axios';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { InvestigationsController } from './investigations.controller';
 import { InvestigationsService } from './investigations.service';
+import { Investigation } from './entities/investigation.entity';
 
 @Module({
-  imports: [OsintClientModule],
+  imports: [TypeOrmModule.forFeature([Investigation]), HttpModule],
   controllers: [InvestigationsController],
   providers: [InvestigationsService],
 })

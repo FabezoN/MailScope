@@ -1,32 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
-import { InvestigationsModule } from './modules/investigations/investigations.module';
-import { ReportsModule } from './modules/reports/reports.module';
-import { User } from './modules/users/entities/user.entity';
+import { ConfigModule } from '@nestjs/config';
+import { AuthProxyModule } from './modules/auth/auth-proxy.module';
+import { InvestigationsProxyModule } from './modules/investigations/investigations-proxy.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.getOrThrow('DATABASE_HOST'),
-        port: config.getOrThrow<number>('DATABASE_PORT'),
-        username: config.getOrThrow('DATABASE_USER'),
-        password: config.getOrThrow('DATABASE_PASSWORD'),
-        database: config.getOrThrow('DATABASE_NAME'),
-        entities: [User],
-        synchronize: config.get('NODE_ENV') !== 'production',
-      }),
-    }),
-    AuthModule,
-    UsersModule,
-    InvestigationsModule,
-    ReportsModule,
+    AuthProxyModule,
+    InvestigationsProxyModule,
   ],
 })
 export class AppModule {}
