@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { InvestigationsModule } from './modules/investigations/investigations.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { User } from './modules/users/entities/user.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { ReportsModule } from './modules/reports/reports.module';
         username: config.getOrThrow('DATABASE_USER'),
         password: config.getOrThrow('DATABASE_PASSWORD'),
         database: config.getOrThrow('DATABASE_NAME'),
-        entities: [],
+        entities: [User],
         synchronize: config.get('NODE_ENV') !== 'production',
       }),
     }),

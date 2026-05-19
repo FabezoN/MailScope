@@ -8,20 +8,20 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/tsconfig/package.json ./packages/tsconfig/
 COPY packages/schemas/package.json  ./packages/schemas/
 COPY packages/utils/package.json    ./packages/utils/
-COPY apps/api/package.json          ./apps/api/
-COPY apps/api/tsconfig.json         ./apps/api/
+COPY apps/gateway/package.json      ./apps/gateway/
+COPY apps/gateway/tsconfig.json     ./apps/gateway/
 RUN pnpm install --frozen-lockfile
 
 # ---- dev ----
 FROM deps AS dev
-WORKDIR /app/apps/api
+WORKDIR /app/apps/gateway
 CMD ["pnpm", "start:dev"]
 
 # ---- build ----
 FROM deps AS build
 WORKDIR /app
 COPY packages ./packages
-COPY apps/api ./apps/api
-RUN pnpm --filter @mailscope/api build
-WORKDIR /app/apps/api
+COPY apps/gateway ./apps/gateway
+RUN pnpm --filter @mailscope/gateway build
+WORKDIR /app/apps/gateway
 CMD ["node", "dist/main.js"]

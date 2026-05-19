@@ -118,6 +118,10 @@ jobs:
           echo "DATABASE_PASSWORD=mailscope" >> .env
           echo "DATABASE_NAME=mailscope" >> .env
           echo "NODE_ENV=development" >> .env
+          echo "API_PORT=3000" >> .env
+          echo "JWT_SECRET=ci-secret-not-for-production" >> .env
+          echo "OSINT_SERVICE_PORT=3001" >> .env
+          echo "OSINT_SERVICE_URL=http://osint-service-dev:3001" >> .env
 
       - name: Build and start containers
         run: docker compose up --build -d
@@ -125,15 +129,18 @@ jobs:
       - name: Wait for API to be ready
         run: |
           for i in $(seq 1 30); do
-            if curl -s http://localhost:3000 > /dev/null; then
-              echo "API is ready"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://localhost:3000/api/v1/auth/login \
+              -X POST -H "Content-Type: application/json" -d '{}' || echo "000")
+            if [ "$STATUS" = "400" ] || [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
+              echo "✅ Gateway is ready (HTTP $STATUS)"
               exit 0
             fi
-            echo "Waiting for API... ($i/30)"
+            echo "Waiting for gateway... ($i/30) [HTTP $STATUS]"
             sleep 2
           done
-          echo "API did not start in time"
-          docker compose logs
+          echo "❌ Gateway did not start in time"
+          docker compose logs gateway-dev
           exit 1
 
       - name: Tear down

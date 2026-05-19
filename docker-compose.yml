@@ -15,25 +15,27 @@ services:
       timeout: 5s
       retries: 10
 
-  api-dev:
+  gateway-dev:
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
+      dockerfile: apps/gateway/Dockerfile
       target: dev
     env_file: .env
     volumes:
-      - ./apps/api/src:/app/apps/api/src
+      - ./apps/gateway/src:/app/apps/gateway/src
       - ./packages:/app/packages
     ports:
       - "3000:3000"
     depends_on:
       db:
         condition: service_healthy
+      osint-service-dev:
+        condition: service_started
 
-  api-build:
+  gateway-build:
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
+      dockerfile: apps/gateway/Dockerfile
       target: build
     env_file: .env
     ports:
