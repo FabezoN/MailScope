@@ -59,7 +59,11 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  app.enableCors({ origin: process.env.CORS_ORIGIN });
+  const isDev = process.env.NODE_ENV !== 'production';
+  app.enableCors({
+    origin: isDev ? true : (process.env.CORS_ORIGIN ?? false),
+    credentials: true,
+  });
 
   const port = process.env.API_PORT ?? 3000;
   await app.listen(port);

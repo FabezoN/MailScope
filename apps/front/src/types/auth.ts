@@ -1,10 +1,7 @@
-export interface AuthTokens {
-  accessToken: string;
-}
-
 export interface User {
   id: string;
   email: string;
+  role: 'USER' | 'ADMIN';
 }
 
 export interface LoginPayload {
@@ -18,6 +15,6 @@ export interface RegisterPayload {
 }
 
 export interface AuthResponse {
-  accessToken: string;
+  access_token: string;
   user: User;
 }

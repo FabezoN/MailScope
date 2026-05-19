@@ -28,8 +28,8 @@ Le `.env` n'est pas commité. Les variables configurées :
 | Service | Mode | Port |
 |---|---|---|
 | `db` | PostgreSQL 16 | 5432 |
-| `api-dev` | NestJS watch (ts-node-dev) | 3000 |
-| `api-build` | NestJS compilé (node dist/) | 3000 |
+| `gateway-dev` | NestJS watch (ts-node-dev) | 3000 |
+| `gateway-build` | NestJS compilé (node dist/) | 3000 |
 | `front-dev` | Vite dev server (HMR) | 5173 |
 | `front-build` | Nginx servant le build statique | 80 |
 | `job-runner-dev` | Worker NestJS watch (tsx watch) | - |
@@ -44,7 +44,7 @@ docker compose up
 ```
 
 Lance les services par défaut en mode **dev avec watch** :
-- `api-dev`
+- `gateway-dev`
 - `job-runner-dev`
 
 Chaque modification dans `src/` redémarre automatiquement le service concerné.
@@ -65,7 +65,7 @@ docker compose --profile build up
 ```
 
 Lance les services compilés (TypeScript → JavaScript) :
-- `api-build`
+- `gateway-build`
 - `job-runner-build`
 
 Utile pour vérifier que le build passe avant un merge.
@@ -80,7 +80,7 @@ Rebuild les images puis lance les services compilés.
 
 ```bash
 docker compose down          # arrêter et supprimer les containers
-docker compose logs api-dev  # voir les logs d'un service
+docker compose logs gateway-dev  # voir les logs d'un service
 docker compose logs job-runner-dev
 docker compose ps            # état des containers
 ```
@@ -91,7 +91,7 @@ En mode dev, le code source est monté en volume — les images n'ont pas besoin
 
 | Volume local | Chemin dans le container |
 |---|---|
-| `./apps/api/src` | `/app/apps/api/src` |
+| `./apps/gateway/src` | `/app/apps/gateway/src` |
 | `./apps/job-runner/src` | `/app/apps/job-runner/src` |
 | `./packages` | `/app/packages` |
 | `./apps/front/src` | `/app/apps/front/src` |
