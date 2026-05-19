@@ -5,6 +5,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Client } from 'pg';
 import { AppModule } from './app.module';
 
@@ -65,10 +66,20 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
 
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Mailscope API')
+    .setDescription("API REST pour l'analyse et l'investigation d'emails")
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document);
+
   const port = process.env.API_PORT ?? 3000;
   await app.listen(port);
 
   Logger.log(`API running on http://localhost:${port}/api/v1`, 'Bootstrap');
+  Logger.log(`Swagger UI available on http://localhost:${port}/api/docs`, 'Bootstrap');
 }
 
 bootstrap();
