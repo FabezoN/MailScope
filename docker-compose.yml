@@ -83,6 +83,7 @@ services:
     env_file: .env
     volumes:
       - ./apps/gateway/src:/app/apps/gateway/src
+      - ./apps/gateway/seeds:/app/apps/gateway/seeds
       - ./packages:/app/packages
     ports:
       - "3000:3000"
