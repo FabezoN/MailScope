@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { InvestigationsModule } from './modules/investigations/investigations.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { HealthModule } from './modules/health/health.module';
 import { User } from './modules/users/entities/user.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -27,6 +30,7 @@ import { User } from './modules/users/entities/user.entity';
     UsersModule,
     InvestigationsModule,
     ReportsModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
