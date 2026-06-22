@@ -101,7 +101,7 @@ export class InvestigationsService {
       status,
       ...(result !== undefined && { result }),
       ...(errorMessage !== undefined && { errorMessage }),
-    });
+    } as any);
     return this.investigationRepo.findOne({ where: { id } });
   }
 }
