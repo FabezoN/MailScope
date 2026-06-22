@@ -15,6 +15,16 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   auth-service-dev:
     build:
       context: .
@@ -59,6 +69,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       osint-service-dev:
         condition: service_started
 
@@ -72,6 +84,8 @@ services:
       - "3003:3003"
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     profiles:
       - build
@@ -135,6 +149,13 @@ services:
       - ./apps/job-runner/src:/app/apps/job-runner/src
       - ./packages:/app/packages
     env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      investigations-service-dev:
+        condition: service_started
+      osint-service-dev:
+        condition: service_started
 
   job-runner-build:
     build:

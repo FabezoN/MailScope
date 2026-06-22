@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+} from 'typeorm';
+import { Report } from './report.entity';
 
 export enum InvestigationStatus {
   PENDING = 'PENDING',
@@ -26,6 +34,9 @@ export class Investigation {
 
   @Column({ type: 'text', nullable: true })
   errorMessage!: string | null;
+
+  @OneToOne(() => Report, (report) => report.investigation, { eager: false, nullable: true })
+  report?: Report | null;
 
   @CreateDateColumn()
   createdAt!: Date;

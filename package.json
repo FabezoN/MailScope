@@ -8,6 +8,7 @@
     "lint:fix": "pnpm -r --if-present lint:fix",
     "format": "pnpm -r --if-present format",
     "format:check": "pnpm -r --if-present format:check",
+    "test": "pnpm -r --if-present test",
     "ci": "pnpm -r --if-present lint && pnpm -r --if-present build"
   },
   "pnpm": {
