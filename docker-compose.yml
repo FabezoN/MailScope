@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: postgres
+      POSTGRES_DB: ${DATABASE_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -23,6 +23,7 @@ services:
     env_file: .env
     volumes:
       - ./apps/auth-service/src:/app/apps/auth-service/src
+      - ./apps/auth-service/seeds:/app/apps/auth-service/seeds
       - ./packages:/app/packages
     ports:
       - "3002:3002"
@@ -83,7 +84,6 @@ services:
     env_file: .env
     volumes:
       - ./apps/gateway/src:/app/apps/gateway/src
-      - ./apps/gateway/seeds:/app/apps/gateway/seeds
       - ./packages:/app/packages
     ports:
       - "3000:3000"

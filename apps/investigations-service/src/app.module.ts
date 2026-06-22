@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HealthModule } from './modules/health/health.module';
 import { InvestigationsModule } from './modules/investigations/investigations.module';
 import { Investigation } from './modules/investigations/entities/investigation.entity';
 
@@ -20,6 +21,7 @@ import { Investigation } from './modules/investigations/entities/investigation.e
         synchronize: config.get('NODE_ENV') !== 'production',
       }),
     }),
+    HealthModule,
     InvestigationsModule,
   ],
 })
