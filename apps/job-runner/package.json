@@ -10,8 +10,14 @@
     "test": "echo 'No tests yet'"
   },
   "dependencies": {
+    "@mailscope/utils": "workspace:*",
+    "@nestjs/axios": "^3.1.0",
+    "@nestjs/bullmq": "^10.2.3",
     "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^11.1.6",
+    "axios": "^1.7.0",
+    "bullmq": "^5.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
