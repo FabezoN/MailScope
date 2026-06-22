@@ -3,22 +3,35 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "lint": "eslint src --max-warnings=0",
     "test": "echo 'No tests yet'"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
+    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.6",
+    "@nestjs/typeorm": "^11.0.2",
+    "axios": "^1.7.0",
+    "bullmq": "^5.0.0",
+    "class-transformer": "^0.5.1",
+    "dotenv": "^16.4.0",
+    "pg": "^8.13.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@mailscope/tsconfig": "workspace:*",
     "@types/node": "^24.9.2",
     "eslint": "^10.2.1",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2"
