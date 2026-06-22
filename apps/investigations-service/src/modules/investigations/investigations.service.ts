@@ -97,11 +97,11 @@ export class InvestigationsService {
     result?: Record<string, unknown>,
     errorMessage?: string,
   ) {
-    await this.investigationRepo.update(id, {
-      status,
-      ...(result !== undefined && { result }),
-      ...(errorMessage !== undefined && { errorMessage }),
-    } as any);
+    const patch: Partial<Investigation> = { status };
+    if (result !== undefined) patch.result = result;
+    if (errorMessage !== undefined) patch.errorMessage = errorMessage;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await this.investigationRepo.update(id, patch as any);
     return this.investigationRepo.findOne({ where: { id } });
   }
 }
