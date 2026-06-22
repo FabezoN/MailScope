@@ -51,6 +51,7 @@ describe('AnalysisProcessor', () => {
   });
 
   const makeJob = (data = { investigationId: 'uuid-1', email: 'test@gmail.com' }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ({ data } as any);
 
   describe('process (succès)', () => {
