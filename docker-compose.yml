@@ -22,8 +22,8 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
-      timeout: 3s
-      retries: 5
+      timeout: 5s
+      retries: 10
 
   auth-service-dev:
     build:
@@ -84,6 +84,8 @@ services:
       - "3003:3003"
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     profiles:
       - build
@@ -151,6 +153,8 @@ services:
       redis:
         condition: service_healthy
       investigations-service-dev:
+        condition: service_started
+      osint-service-dev:
         condition: service_started
 
   job-runner-build:
