@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import MatrixRain from '../MatrixRain';
 import '../../styles/auth.css';
 
 const SearchIcon = () => (
@@ -11,6 +12,7 @@ const SearchIcon = () => (
 const AuthLayout = () => {
   return (
     <div className="auth-wrapper">
+      <MatrixRain />
       <div className="auth-card">
         <div className="auth-logo">
           <span className="auth-logo-icon">

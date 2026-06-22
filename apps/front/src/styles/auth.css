@@ -5,14 +5,18 @@
   justify-content: center;
   padding: 40px 24px;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, var(--accent-bg), transparent);
+    radial-gradient(ellipse 80% 60% at 50% -5%, rgba(0, 255, 65, 0.07), transparent);
 }
 
 .auth-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 420px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: rgba(6, 6, 10, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-bright);
   border-radius: 16px;
   padding: 40px;
   box-shadow: var(--shadow);
@@ -39,11 +43,12 @@
 }
 
 .auth-logo h1 {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text-h);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent);
   margin: 0;
-  letter-spacing: -0.4px;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 12px rgba(0, 255, 65, 0.4);
 }
 
 .auth-logo p {
@@ -117,21 +122,24 @@
 
 .btn-primary {
   padding: 11px 20px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
   margin-top: 4px;
   width: 100%;
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.88;
+  background: rgba(0, 255, 65, 0.14);
+  box-shadow: var(--accent-glow);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -139,7 +147,7 @@
 }
 
 .btn-primary:disabled {
-  opacity: 0.55;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
