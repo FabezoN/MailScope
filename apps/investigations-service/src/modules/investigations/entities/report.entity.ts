@@ -22,15 +22,6 @@ export interface PlatformResult {
   rateLimit: boolean;
 }
 
-export interface LeakIXExposure {
-  host: string;
-  ip: string;
-  port: number;
-  protocol: string;
-  service: string;
-  severity: string;
-}
-
 @Entity('reports')
 export class Report {
   @PrimaryGeneratedColumn('uuid')
@@ -60,9 +51,6 @@ export class Report {
 
   @Column({ type: 'jsonb' })
   platforms!: PlatformResult[];
-
-  @Column({ type: 'jsonb' })
-  leakixExposures!: LeakIXExposure[];
 
   @Column({ type: 'jsonb' })
   recommendations!: string[];

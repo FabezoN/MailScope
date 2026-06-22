@@ -4,13 +4,10 @@ export interface HoleheEntry {
     emailRecovery: boolean;
     rateLimit: boolean;
 }
-export interface LeakIXEntry {
-    host: string;
-    ip: string;
-    port: number;
-    protocol: string;
-    service: string;
-    severity: string;
+export interface XonBreachEntry {
+    breach: string;
+    passwordRisk: string;
+    xposedRecords: number;
 }
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export interface ScoreResult {
@@ -19,5 +16,5 @@ export interface ScoreResult {
     reasons: string[];
     recommendations: string[];
 }
-export declare function computeScore(holehe: HoleheEntry[], leakix: LeakIXEntry[]): ScoreResult;
+export declare function computeScore(holehe: HoleheEntry[], xon: XonBreachEntry[]): ScoreResult;
 //# sourceMappingURL=scoring.d.ts.map

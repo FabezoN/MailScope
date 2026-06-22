@@ -1,73 +1,22 @@
-import { Link, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { investigationService } from '../services/investigationService';
-import type { Investigation, OsintResult } from '../types/investigation';
+import type { HolehePlatform, Investigation, RiskLevel } from '../types/investigation';
 
-/* ── Score ─────────────────────────────────────────────────── */
-
-type Level = 'low' | 'medium' | 'high' | 'critical';
-
-function computeScore(result: OsintResult): number {
-  let s = 0;
-  const found = result.holehe.filter(h => h.exists);
-  s += found.length * 8;
-  s += found.filter(h => h.emailRecovery).length * 5;
-  result.leakix.forEach(l => {
-    s += l.severity === 'critical' ? 25 : l.severity === 'high' ? 15 : l.severity === 'medium' ? 8 : 3;
-  });
-  return Math.min(100, s);
-}
-
-function getLevel(score: number): Level {
-  if (score <= 30) return 'low';
-  if (score <= 60) return 'medium';
-  if (score <= 85) return 'high';
-  return 'critical';
-}
-
-const LEVEL_LABEL: Record<Level, string> = {
-  low: 'LOW RISK',
-  medium: 'MEDIUM RISK',
-  high: 'HIGH RISK',
-  critical: 'CRITICAL RISK',
+const LEVEL_LABEL: Record<RiskLevel, string> = {
+  LOW: 'LOW RISK',
+  MEDIUM: 'MEDIUM RISK',
+  HIGH: 'HIGH RISK',
+  CRITICAL: 'CRITICAL RISK',
 };
 
-const LEVEL_DESC: Record<Level, string> = {
-  low: 'Faible exposition détectée. Profil relativement sûr.',
-  medium: 'Exposition modérée. Quelques points de vigilance.',
-  high: 'Exposition significative. Action recommandée.',
-  critical: 'Exposition critique. Intervention urgente requise.',
+const LEVEL_DESC: Record<RiskLevel, string> = {
+  LOW: 'Faible exposition détectée. Profil relativement sûr.',
+  MEDIUM: 'Exposition modérée. Quelques points de vigilance.',
+  HIGH: 'Exposition significative. Action recommandée.',
+  CRITICAL: 'Exposition critique. Intervention urgente requise.',
 };
-
-/* ── Recommendations ────────────────────────────────────────── */
-
-function buildRecommendations(result: OsintResult, level: Level): { icon: string; text: string }[] {
-  const recs: { icon: string; text: string }[] = [];
-  const found = result.holehe.filter(h => h.exists);
-  const recovery = found.filter(h => h.emailRecovery);
-  const criticalLeaks = result.leakix.filter(l => l.severity === 'critical' || l.severity === 'high');
-
-  if (found.length > 5)
-    recs.push({ icon: '>', text: `<strong>Réduire l'empreinte numérique</strong> — Cet email est associé à ${found.length} plateformes. Envisagez d'utiliser des alias email distincts par service.` });
-
-  if (recovery.length > 0)
-    recs.push({ icon: '>', text: `<strong>Revoir les emails de récupération</strong> — ${recovery.length} plateforme${recovery.length > 1 ? 's utilisent' : ' utilise'} cet email comme adresse de récupération. En cas de compromission, l'accès à ces comptes serait facilité.` });
-
-  if (criticalLeaks.length > 0)
-    recs.push({ icon: '!', text: `<strong>Vulnérabilités domaine critiques</strong> — ${criticalLeaks.length} exposition${criticalLeaks.length > 1 ? 's' : ''} de sévérité élevée détectée${criticalLeaks.length > 1 ? 's' : ''} sur le domaine. Contactez l'équipe sécurité.` });
-
-  if (result.leakix.some(l => l.port === 22 || l.port === 3389))
-    recs.push({ icon: '!', text: `<strong>Ports d'administration exposés</strong> — SSH (22) ou RDP (3389) détectés sur le domaine. Restreindre l'accès à ces ports via un pare-feu.` });
-
-  if (level === 'low' || recs.length === 0)
-    recs.push({ icon: '+', text: `<strong>Bonne pratique</strong> — Activez l'authentification à deux facteurs (2FA) sur toutes les plateformes où cet email est enregistré.` });
-
-  recs.push({ icon: '~', text: `<strong>Surveillance régulière</strong> — Répétez cette analyse périodiquement. Les fuites de données et nouvelles expositions évoluent dans le temps.` });
-
-  return recs;
-}
-
-/* ── Helpers ────────────────────────────────────────────────── */
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleString('fr-FR', {
@@ -75,12 +24,8 @@ const formatDate = (iso: string) =>
     hour: '2-digit', minute: '2-digit',
   });
 
-const formatDuration = (ms: number) => {
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
-};
-
-/* ── Icons ──────────────────────────────────────────────────── */
+const formatDuration = (ms: number) =>
+  ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
 
 const BackIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,20 +33,74 @@ const BackIcon = () => (
   </svg>
 );
 
-/* ── Sub-components ─────────────────────────────────────────── */
-
 const StatusBadge = ({ status }: { status: Investigation['status'] }) => (
   <span className={`status-badge ${status}`}>{status}</span>
 );
 
-const SeverityBadge = ({ s }: { s: string }) => (
-  <span className={`severity-badge ${s}`}>{s}</span>
-);
+type HolehFilter = 'found' | 'not-found' | 'all';
 
-/* ── Page ───────────────────────────────────────────────────── */
+function HolehePlatforms({ platforms }: { platforms: HolehePlatform[] }) {
+  const [filter, setFilter] = useState<HolehFilter>('found');
+
+  const displayed = platforms.filter(p =>
+    filter === 'all'       ? true :
+    filter === 'found'     ? p.exists :
+                             !p.exists,
+  );
+
+  const foundCount = platforms.filter(p => p.exists).length;
+
+  return (
+    <div className="section-card">
+      <div className="section-header">
+        <span className="section-title">HOLEHE — PLATFORMS</span>
+        <div className="holehe-filters">
+          {(['found', 'not-found', 'all'] as HolehFilter[]).map(f => (
+            <button
+              key={f}
+              className={`holehe-filter-btn${filter === f ? ' active' : ''}`}
+              onClick={() => setFilter(f)}
+            >
+              {f === 'found' ? `FOUND (${foundCount})` : f === 'not-found' ? `ABSENT (${platforms.length - foundCount})` : `ALL (${platforms.length})`}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="section-body platform-scroll">
+        {platforms.length === 0 ? (
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Aucune donnée Holehe.</div>
+        ) : displayed.length === 0 ? (
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Aucun résultat pour ce filtre.</div>
+        ) : (
+          <div className="platform-grid">
+            {displayed.map((p, i) => (
+              <div key={i} className={`platform-item ${p.exists ? 'found' : 'not-found'}`}>
+                <div className="platform-name">{p.platform}</div>
+                <div className="platform-tags">
+                  {p.exists
+                    ? <span className="platform-tag found-tag">FOUND</span>
+                    : <span className="platform-tag absent-tag">ABSENT</span>
+                  }
+                  {p.exists && p.emailRecovery && (
+                    <span className="platform-tag recovery-tag">RECOVERY</span>
+                  )}
+                  {p.rateLimit && (
+                    <span className="platform-tag ratelimit-tag">RATE LIMIT</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function InvestigationReportPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: inv, isLoading, isError } = useQuery({
     queryKey: ['investigation', id],
@@ -113,11 +112,53 @@ export default function InvestigationReportPage() {
     enabled: !!id,
   });
 
+  const retryMutation = useMutation({
+    mutationFn: () => investigationService.retry(id!),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['investigation', id] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => investigationService.remove(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['investigations'] });
+      navigate('/investigations');
+    },
+  });
+
+  const canRetry = inv?.status === 'COMPLETED' || inv?.status === 'FAILED';
+  const canDelete = inv?.status !== 'PROCESSING';
+
   return (
     <div className="page">
-      <Link to="/investigations" className="report-back">
-        <BackIcon /> BACK TO INVESTIGATIONS
-      </Link>
+      <div className="report-nav">
+        <Link to="/investigations" className="report-back">
+          <BackIcon /> BACK TO INVESTIGATIONS
+        </Link>
+        {inv && (
+          <div className="report-actions">
+            {canRetry && (
+              <button
+                className="action-btn retry-btn"
+                onClick={() => retryMutation.mutate()}
+                disabled={retryMutation.isPending}
+              >
+                ↺ {retryMutation.isPending ? 'RELANCING...' : 'RETRY'}
+              </button>
+            )}
+            {canDelete && (
+              <button
+                className="action-btn delete-btn"
+                onClick={() => {
+                  if (window.confirm('Supprimer cette investigation ?')) deleteMutation.mutate();
+                }}
+                disabled={deleteMutation.isPending}
+              >
+                ✕ {deleteMutation.isPending ? 'DELETING...' : 'DELETE'}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {isLoading && (
         <div className="report-waiting">
@@ -135,7 +176,6 @@ export default function InvestigationReportPage() {
 
       {inv && (
         <>
-          {/* Header */}
           <div className="report-header">
             <div className="report-email">{inv.email}</div>
             {inv.result?.domain && (
@@ -159,7 +199,6 @@ export default function InvestigationReportPage() {
             </div>
           </div>
 
-          {/* Pending / Processing */}
           {(inv.status === 'PENDING' || inv.status === 'PROCESSING') && (
             <div className="report-waiting">
               <div className="report-waiting-title">
@@ -172,56 +211,58 @@ export default function InvestigationReportPage() {
             </div>
           )}
 
-          {/* Failed */}
           {inv.status === 'FAILED' && (
             <div className="report-error-msg">
               ANALYSE ÉCHOUÉE — {inv.errorMessage ?? 'Erreur inconnue.'}
             </div>
           )}
 
-          {/* Completed */}
           {inv.status === 'COMPLETED' && inv.result && (() => {
-            const score = computeScore(inv.result);
-            const level = getLevel(score);
-            const recs = buildRecommendations(inv.result, level);
-            const foundPlatforms = inv.result.holehe.filter(h => h.exists);
+            const { score, holehe, xon } = inv.result;
+            const levelClass = score.level.toLowerCase();
 
             return (
               <>
-                {/* Score */}
                 <div className="score-section">
                   <div className="score-card">
-                    <div className={`score-number ${level}`}>{score}</div>
+                    <div className={`score-number ${levelClass}`}>{score.value}</div>
                     <div className="score-info">
-                      <span className={`score-level ${level}`}>{LEVEL_LABEL[level]}</span>
-                      <div className="score-desc">{LEVEL_DESC[level]}</div>
+                      <span className={`score-level ${levelClass}`}>{LEVEL_LABEL[score.level]}</span>
+                      <div className="score-desc">{LEVEL_DESC[score.level]}</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Holehe + LeakIX */}
                 <div className="report-grid">
+
+                  <HolehePlatforms platforms={holehe} />
+
                   <div className="section-card">
                     <div className="section-header">
-                      <span className="section-title">HOLEHE — PLATFORMS</span>
-                      <span className="section-count">{foundPlatforms.length} / {inv.result.holehe.length} found</span>
+                      <span className="section-title">XPOSEDORNOT — DATA BREACHES</span>
+                      <span className="section-count">{xon.length} breach{xon.length !== 1 ? 'es' : ''} found</span>
                     </div>
-                    <div className="section-body">
-                      {inv.result.holehe.length === 0 ? (
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Aucune donnée Holehe.</div>
+                    <div className="section-body xon-scroll">
+                      {xon.length === 0 ? (
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Aucune fuite de données détectée.</div>
                       ) : (
-                        <div className="platform-grid">
-                          {inv.result.holehe.map((p, i) => (
-                            <div key={i} className={`platform-item ${p.exists ? 'found' : 'not-found'}`}>
-                              <div className="platform-name">{p.platform}</div>
-                              <div className="platform-tags">
-                                {p.exists
-                                  ? <span className="platform-tag found-tag">FOUND</span>
-                                  : <span className="platform-tag absent-tag">ABSENT</span>
-                                }
-                                {p.exists && p.emailRecovery && (
-                                  <span className="platform-tag recovery-tag">RECOVERY</span>
-                                )}
+                        <div className="xon-list">
+                          {xon.map((b, i) => (
+                            <div key={i} className="xon-item">
+                              <div className="xon-header">
+                                <span className="xon-name">{b.breach}</span>
+                                <div className="xon-meta">
+                                  <span className="xon-date">{b.xposedDate}</span>
+                                  <span className="xon-records">{b.xposedRecords.toLocaleString()} records</span>
+                                  <span className={`xon-risk ${b.passwordRisk.toLowerCase()}`}>{b.passwordRisk}</span>
+                                  {b.verified && <span className="xon-verified">✓ VERIFIED</span>}
+                                </div>
+                              </div>
+                              <div className="xon-domain">{b.domain} — {b.industry}</div>
+                              <div className="xon-data-tags">
+                                {b.xposedData.map((d, j) => (
+                                  <span key={j} className="xon-data-tag">{d}</span>
+                                ))}
                               </div>
                             </div>
                           ))}
@@ -232,57 +273,42 @@ export default function InvestigationReportPage() {
 
                   <div className="section-card">
                     <div className="section-header">
-                      <span className="section-title">LEAKIX — EXPOSURES</span>
-                      <span className="section-count">{inv.result.leakix.length} found</span>
+                      <span className="section-title">RISK FACTORS</span>
+                      <span className="section-count">{score.reasons.length}</span>
                     </div>
                     <div className="section-body">
-                      {inv.result.leakix.length === 0 ? (
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Aucune exposition détectée.</div>
+                      {score.reasons.length === 0 ? (
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Aucun facteur de risque détecté.</div>
                       ) : (
-                        <table className="leakix-table">
-                          <thead>
-                            <tr>
-                              <th>HOST</th>
-                              <th>PORT</th>
-                              <th>SERVICE</th>
-                              <th>SEVERITY</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {inv.result.leakix.map((l, i) => (
-                              <tr key={i}>
-                                <td style={{ color: 'var(--text-h)' }}>{l.ip}</td>
-                                <td style={{ color: 'var(--cyan)' }}>{l.port}</td>
-                                <td>{l.service}</td>
-                                <td><SeverityBadge s={l.severity} /></td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        <div className="rec-list">
+                          {score.reasons.map((r, i) => (
+                            <div key={i} className="rec-item">
+                              <span className="rec-icon" style={{ color: 'var(--red)' }}>!</span>
+                              <span className="rec-text">{r}</span>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Recommendations */}
-                  <div className="section-card full">
+                  <div className="section-card">
                     <div className="section-header">
                       <span className="section-title">RECOMMENDATIONS</span>
-                      <span className="section-count">{recs.length}</span>
+                      <span className="section-count">{score.recommendations.length}</span>
                     </div>
                     <div className="section-body">
                       <div className="rec-list">
-                        {recs.map((r, i) => (
+                        {score.recommendations.map((r, i) => (
                           <div key={i} className="rec-item">
-                            <span className="rec-icon" style={{ color: 'var(--accent)' }}>{r.icon}</span>
-                            <span
-                              className="rec-text"
-                              dangerouslySetInnerHTML={{ __html: r.text }}
-                            />
+                            <span className="rec-icon" style={{ color: 'var(--accent)' }}>{'>'}</span>
+                            <span className="rec-text">{r}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
+
                 </div>
               </>
             );

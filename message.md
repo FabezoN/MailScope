@@ -13,9 +13,9 @@
 | 3  | [Traitement asynchrone](#3-traitement-asynchrone) | 11 | [Interface front](#11-interface-front) |
 | 4  | [OSINT email](#4-osint-email) | 12 | [Sécurité](#12-sécurité) |
 | 5  | [Holehe](#5-holehe) | 13 | [DevOps](#13-devops) |
-| 6  | [LeakIX](#6-leakix) | 14 | [Tests](#14-tests) |
-| 7  | [Scoring de risque](#7-scoring-de-risque) | 15 | [Documentation](#15-documentation) |
-| 8  | [Rapport d'investigation](#8-rapport-dinvestigation) | 🎯 | [MVP prioritaire](#-mvp-prioritaire) |
+| 6  | [Scoring de risque](#6-scoring-de-risque) | 14 | [Tests](#14-tests) |
+| 7  | [Rapport d'investigation](#7-rapport-dinvestigation) | 15 | [Documentation](#15-documentation) |
+| 8  | [Historique utilisateur](#8-historique-utilisateur) | 🎯 | [MVP prioritaire](#-mvp-prioritaire) |
 
 ---
 
@@ -67,11 +67,10 @@ Le **job-runner** récupère l'investigation et doit :
 1. Passer le statut à `PROCESSING`
 2. Appeler le microservice **OSINT**
 3. Récupérer les résultats **Holehe**
-4. Récupérer les résultats **LeakIX**
-5. Calculer le score de risque
-6. Générer un rapport
-7. Sauvegarder le rapport en base
-8. Passer le statut à `COMPLETED`
+4. Calculer le score de risque
+5. Générer un rapport
+6. Sauvegarder le rapport en base
+7. Passer le statut à `COMPLETED`
 
 > ⚠️ **En cas d'erreur :**
 > - Retry automatique
@@ -101,11 +100,6 @@ POST /osint/email
 - Les comptes détectés via **Holehe**
 - Les plateformes trouvées
 - Le domaine de l'email
-- Les expositions **LeakIX** liées au domaine
-- Les IPs exposées
-- Les ports ouverts
-- Les services détectés
-- Les éventuelles vulnérabilités ou services sensibles
 
 ---
 
@@ -134,35 +128,7 @@ Le système doit détecter si l'email est utilisé sur des plateformes publiques
 
 ---
 
-## 6. LeakIX
-
-Le système doit analyser le domaine de l'email.
-
-**Exemple :**
-
-```json
-{
-  "host": "example.com",
-  "ip": "1.2.3.4",
-  "port": 443,
-  "protocol": "https",
-  "service": "nginx",
-  "severity": "medium"
-}
-```
-
-**Fonctionnalités :**
-
-- [ ] Interroger LeakIX
-- [ ] Récupérer les hosts exposés
-- [ ] Identifier les ports ouverts
-- [ ] Détecter les services sensibles
-- [ ] 🔐 Gérer la clé API **côté serveur uniquement**
-- [ ] ⚡ Mettre en cache **Redis** les résultats
-
----
-
-## 7. Scoring de risque
+## 6. Scoring de risque
 
 Le système génère un score entre **0 et 100**.
 
@@ -170,10 +136,6 @@ Le système génère un score entre **0 et 100**.
 
 - Nombre de comptes publics trouvés
 - Nombre de plateformes différentes
-- Présence d'expositions LeakIX
-- Ports sensibles exposés
-- Services critiques exposés
-- Vulnérabilités détectées
 
 **Niveaux :**
 
@@ -192,7 +154,7 @@ Le système génère un score entre **0 et 100**.
 
 ---
 
-## 8. Rapport d'investigation
+## 7. Rapport d'investigation
 
 Chaque investigation possède un rapport clair contenant :
 
@@ -202,12 +164,22 @@ Chaque investigation possède un rapport clair contenant :
 - 🚦 Niveau de risque
 - 👥 Comptes trouvés
 - 🧩 Plateformes détectées
-- 🕳️ Expositions LeakIX
-- 🖥️ IPs / ports / services
 - 💡 Recommandations
 - 📅 Date de création
 - ⏱️ Durée du scan
 - ✔️ Statut final
+
+---
+
+## 8. Historique utilisateur
+
+L'utilisateur peut :
+
+- Voir ses anciennes investigations
+- Filtrer par statut
+- Ouvrir un rapport
+- Relancer une analyse
+- Supprimer une investigation
 
 ---
 
@@ -256,7 +228,6 @@ Le dashboard affiche :
 - Badge de statut
 - Carte de score
 - Détail Holehe
-- Détail LeakIX
 - Recommandations
 - Loader pendant l'analyse
 
@@ -313,7 +284,6 @@ L'application doit intégrer :
 - Changement de statut
 - Scoring
 - Parsing Holehe
-- Parsing LeakIX
 
 **🔬 Tests e2e recommandés :**
 

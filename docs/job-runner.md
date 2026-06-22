@@ -7,7 +7,7 @@ Service de traitement asynchrone des analyses email via BullMQ.
 Le job-runner consomme les jobs de la queue BullMQ `email-analysis` publiés par `investigations-service`. Pour chaque job il :
 
 1. Passe l'investigation en `PROCESSING`
-2. Appelle `osint-service` pour récupérer les données Holehe et LeakIX
+2. Appelle `osint-service` pour récupérer les données Holehe
 3. Calcule le score de risque (`@mailscope/utils`)
 4. Met à jour l'investigation en `COMPLETED` avec le rapport complet
 5. En cas d'erreur, passe en `FAILED` et relance (retry automatique BullMQ)
@@ -38,10 +38,6 @@ Algorithme pur (sans dépendances NestJS), importable partout.
 |---------|--------|
 | Compte Holehe détecté (`exists && !rateLimit`) | +8 par compte (max 40) |
 | Email utilisé comme récupération | +5 par plateforme (max 15) |
-| Exposition LeakIX | +10 par entrée (max 20) |
-| Port sensible exposé (22, 3306, 5432, 6379…) | +8 par port (max 24) |
-| Sévérité `high` | +10 |
-| Sévérité `critical` | +15 |
 
 Score clampé à **100**.
 
@@ -63,7 +59,6 @@ Le champ `result` (JSONB) de l'investigation contient :
   "scannedAt": "2026-06-22T10:00:00.000Z",
   "durationMs": 1234,
   "holehe": [...],
-  "leakix": [...],
   "score": {
     "value": 73,
     "level": "HIGH",
