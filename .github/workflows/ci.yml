@@ -120,6 +120,12 @@ jobs:
           echo "NODE_ENV=development" >> .env
           echo "API_PORT=3000" >> .env
           echo "JWT_SECRET=ci-secret-not-for-production" >> .env
+          echo "AUTH_SERVICE_PORT=3002" >> .env
+          echo "AUTH_SERVICE_URL=http://auth-service-dev:3002" >> .env
+          echo "AUTH_DATABASE_NAME=mailscope_auth" >> .env
+          echo "INVESTIGATIONS_SERVICE_PORT=3003" >> .env
+          echo "INVESTIGATIONS_SERVICE_URL=http://investigations-service-dev:3003" >> .env
+          echo "INVESTIGATIONS_DATABASE_NAME=mailscope_investigations" >> .env
           echo "OSINT_SERVICE_PORT=3001" >> .env
           echo "OSINT_SERVICE_URL=http://osint-service-dev:3001" >> .env
 

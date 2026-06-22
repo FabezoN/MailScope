@@ -1,21 +1,31 @@
 import { Controller, Get } from '@nestjs/common';
-import { HealthCheckService, TypeOrmHealthIndicator, HealthCheck } from '@nestjs/terminus';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiServiceUnavailableResponse } from '@nestjs/swagger';
+import { HealthCheckService, HttpHealthIndicator, HealthCheck } from '@nestjs/terminus';
+import { ConfigService } from '@nestjs/config';
+import { ApiOkResponse, ApiOperation, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('health')
 @Controller('health')
 export class HealthController {
   constructor(
     private readonly health: HealthCheckService,
-    private readonly db: TypeOrmHealthIndicator,
+    private readonly http: HttpHealthIndicator,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get()
   @HealthCheck()
-  @ApiOperation({ summary: 'Vérifier la santé de la base de données' })
-  @ApiOkResponse({ description: 'Base de données opérationnelle' })
-  @ApiServiceUnavailableResponse({ description: 'Base de données inaccessible' })
+  @ApiOperation({ summary: 'Vérifier la santé des microservices' })
+  @ApiOkResponse({ description: 'Tous les services sont opérationnels' })
+  @ApiServiceUnavailableResponse({ description: 'Un ou plusieurs services sont inaccessibles' })
   check() {
-    return this.health.check([() => this.db.pingCheck('database')]);
+    const authUrl = this.configService.getOrThrow('AUTH_SERVICE_URL');
+    const osintUrl = this.configService.getOrThrow('OSINT_SERVICE_URL');
+    const investigationsUrl = this.configService.getOrThrow('INVESTIGATIONS_SERVICE_URL');
+
+    return this.health.check([
+      () => this.http.pingCheck('auth-service', `${authUrl}/health`),
+      () => this.http.pingCheck('osint-service', `${osintUrl}/health`),
+      () => this.http.pingCheck('investigations-service', `${investigationsUrl}/health`),
+    ]);
   }
 }
