@@ -57,6 +57,10 @@ export class InvestigationsService {
     return investigation;
   }
 
+  async removeAll(userId: string): Promise<void> {
+    await this.investigationRepo.delete({ userId });
+  }
+
   async remove(id: string, userId: string): Promise<void> {
     const investigation = await this.investigationRepo.findOne({ where: { id, userId } });
     if (!investigation) throw new NotFoundException('Investigation introuvable');

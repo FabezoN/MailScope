@@ -1,4 +1,5 @@
 export type InvestigationStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface HolehePlatform {
   platform: string;
@@ -7,13 +8,22 @@ export interface HolehePlatform {
   rateLimit: boolean;
 }
 
-export interface LeakIXExposure {
-  host: string;
-  ip: string;
-  port: number;
-  protocol: string;
-  service: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+export interface XonBreach {
+  breach: string;
+  domain: string;
+  industry: string;
+  passwordRisk: string;
+  xposedData: string[];
+  xposedDate: string;
+  xposedRecords: number;
+  verified: boolean;
+}
+
+export interface Score {
+  value: number;
+  level: RiskLevel;
+  reasons: string[];
+  recommendations: string[];
 }
 
 export interface OsintResult {
@@ -21,8 +31,9 @@ export interface OsintResult {
   domain: string;
   scannedAt: string;
   durationMs: number;
+  score: Score;
   holehe: HolehePlatform[];
-  leakix: LeakIXExposure[];
+  xon: XonBreach[];
 }
 
 export interface Investigation {

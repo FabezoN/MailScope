@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { investigationService } from '../services/investigationService';
-import type { Investigation, InvestigationStatus } from '../types/investigation';
+import type { Investigation, InvestigationStatus, RiskLevel } from '../types/investigation';
 
 type Filter = 'ALL' | InvestigationStatus;
 
@@ -22,6 +22,10 @@ const ArrowIcon = () => (
 
 const StatusBadge = ({ status }: { status: InvestigationStatus }) => (
   <span className={`status-badge ${status}`}>{status}</span>
+);
+
+const RiskBadge = ({ level }: { level: RiskLevel }) => (
+  <span className={`risk-badge ${level.toLowerCase()}`}>{level}</span>
 );
 
 const formatDate = (iso: string) => {
@@ -61,7 +65,9 @@ export default function InvestigationsPage() {
       <div className="page-header">
         <h1 className="page-title">INVESTIGATIONS</h1>
         <p className="page-subtitle">
-          {data ? `${data.length} investigation${data.length !== 1 ? 's' : ''} — ${data.filter(i => i.status === 'COMPLETED').length} completed` : 'Loading...'}
+          {data
+            ? `${data.length} investigation${data.length !== 1 ? 's' : ''} — ${data.filter(i => i.status === 'COMPLETED').length} completed`
+            : 'Loading...'}
         </p>
       </div>
 
@@ -88,6 +94,7 @@ export default function InvestigationsPage() {
           <div className="inv-table-head">
             <span className="inv-th">Email / Domain</span>
             <span className="inv-th">Status</span>
+            <span className="inv-th">Risk</span>
             <span className="inv-th">Platforms</span>
             <span className="inv-th">Date</span>
             <span className="inv-th" />
@@ -97,6 +104,7 @@ export default function InvestigationsPage() {
               <div key={i} className="skeleton-row">
                 <div className="skeleton-cell" style={{ width: '60%' }} />
                 <div className="skeleton-cell" style={{ width: '80px' }} />
+                <div className="skeleton-cell" style={{ width: '70px' }} />
                 <div className="skeleton-cell" style={{ width: '60px' }} />
                 <div className="skeleton-cell" style={{ width: '100px' }} />
                 <div className="skeleton-cell" style={{ width: '20px' }} />
@@ -135,6 +143,7 @@ export default function InvestigationsPage() {
           <div className="inv-table-head">
             <span className="inv-th">Email / Domain</span>
             <span className="inv-th">Status</span>
+            <span className="inv-th">Risk</span>
             <span className="inv-th">Platforms</span>
             <span className="inv-th">Date</span>
             <span className="inv-th" />
@@ -151,6 +160,11 @@ export default function InvestigationsPage() {
                     )}
                   </div>
                   <StatusBadge status={inv.status} />
+                  <div className="inv-risk">
+                    {inv.result?.score
+                      ? <RiskBadge level={inv.result.score.level} />
+                      : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </div>
                   <div className="inv-platforms">
                     {platforms
                       ? <><span>{platforms.found}</span> / {platforms.total}</>

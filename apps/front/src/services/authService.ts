@@ -17,6 +17,16 @@ export const authService = {
     return data;
   },
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await api.patch('/auth/me/password', { currentPassword, newPassword });
+  },
+
+  async deleteAccount(): Promise<void> {
+    await api.delete('/auth/me');
+    authStore.removeToken();
+    window.location.href = '/login';
+  },
+
   logout(): void {
     authStore.removeToken();
     window.location.href = '/login';

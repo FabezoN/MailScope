@@ -47,6 +47,13 @@ export class InvestigationsController {
     return this.investigationsService.findOne(id, userId);
   }
 
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Supprimer toutes les investigations de l'utilisateur" })
+  removeAll(@Headers('x-user-id') userId: string) {
+    return this.investigationsService.removeAll(userId);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: "Supprimer une investigation" })

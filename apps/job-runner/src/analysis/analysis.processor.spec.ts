@@ -15,8 +15,8 @@ const osintResult = {
     { exists: true, platform: 'twitter', rateLimit: false, emailRecovery: true },
     { exists: true, platform: 'instagram', rateLimit: false, emailRecovery: false },
   ],
-  leakix: [
-    { ip: '1.2.3.4', host: 'gmail.com', port: 443, service: 'nginx', protocol: 'https', severity: 'medium' },
+  xon: [
+    { breach: 'Adobe', passwordRisk: 'High', xposedRecords: 153000000 },
   ],
 };
 
@@ -87,7 +87,7 @@ describe('AnalysisProcessor', () => {
       expect(body.result).toMatchObject({
         email: 'test@gmail.com',
         holehe: osintResult.holehe,
-        leakix: osintResult.leakix,
+        xon: osintResult.xon,
         score: expect.objectContaining({
           value: expect.any(Number),
           level: expect.any(String),

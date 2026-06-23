@@ -47,6 +47,12 @@ export class InvestigationsProxyController {
     return this.forward('GET', `/${id}`, null, req.user);
   }
 
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeAll(@Request() req: AuthRequest) {
+    return this.forwardDelete('', req.user);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @Request() req: AuthRequest) {

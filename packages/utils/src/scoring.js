@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.computeScore = computeScore;
-const SENSITIVE_PORTS = new Set([21, 22, 23, 25, 110, 143, 445, 1433, 3306, 5432, 6379, 27017]);
-function computeScore(holehe, leakix) {
+function computeScore(holehe, xon) {
     let score = 0;
     const reasons = [];
     const recommendations = [];
@@ -18,29 +17,16 @@ function computeScore(holehe, leakix) {
         reasons.push(`Email utilisé comme récupération sur : ${withRecovery.map(h => h.platform).join(', ')}`);
         recommendations.push('Désactivez la récupération par email sur les plateformes non critiques');
     }
-    if (leakix.length > 0) {
-        score += Math.min(leakix.length * 10, 20);
-        reasons.push(`${leakix.length} exposition(s) détectée(s) sur le domaine via LeakIX`);
-        recommendations.push('Auditez les services exposés sur Internet pour votre domaine');
+    if (xon.length > 0) {
+        score += Math.min(xon.length * 8, 40);
+        reasons.push(`${xon.length} fuite(s) de données détectée(s) : ${xon.map(b => b.breach).join(', ')}`);
+        recommendations.push('Changez vos mots de passe sur les services compromis');
     }
-    const sensitivePorts = leakix.filter(l => SENSITIVE_PORTS.has(l.port));
-    if (sensitivePorts.length > 0) {
-        score += Math.min(sensitivePorts.length * 8, 24);
-        const ports = [...new Set(sensitivePorts.map(l => l.port))];
-        reasons.push(`Ports sensibles exposés : ${ports.join(', ')}`);
-        recommendations.push('Fermez ou protégez les ports sensibles exposés sur Internet');
-    }
-    for (const entry of leakix) {
-        if (entry.severity === 'critical') {
-            score += 15;
-            reasons.push(`Vulnérabilité critique sur ${entry.host}:${entry.port} (${entry.service})`);
-            recommendations.push(`Corrigez immédiatement la vulnérabilité critique sur ${entry.host}`);
-        }
-        else if (entry.severity === 'high') {
-            score += 10;
-            reasons.push(`Exposition haute sévérité sur ${entry.host}:${entry.port} (${entry.service})`);
-            recommendations.push(`Investiguer l'exposition sur ${entry.host}:${entry.port}`);
-        }
+    const highRisk = xon.filter(b => b.passwordRisk.toLowerCase() === 'high');
+    if (highRisk.length > 0) {
+        score += Math.min(highRisk.length * 5, 15);
+        reasons.push(`Mots de passe à haut risque exposés dans : ${highRisk.map(b => b.breach).join(', ')}`);
+        recommendations.push('Vos mots de passe sont facilement récupérables — changez-les immédiatement');
     }
     const value = Math.min(score, 100);
     const level = value <= 30 ? 'LOW' :

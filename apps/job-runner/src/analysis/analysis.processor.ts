@@ -4,7 +4,7 @@ import { Job } from 'bullmq';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { computeScore, HoleheEntry, LeakIXEntry } from '@mailscope/utils';
+import { computeScore, HoleheEntry, XonBreachEntry } from '@mailscope/utils';
 
 interface AnalysisJobData {
   investigationId: string;
@@ -16,7 +16,7 @@ interface OsintResult {
   domain: string;
   scannedAt: string;
   holehe: HoleheEntry[];
-  leakix: LeakIXEntry[];
+  xon: XonBreachEntry[];
 }
 
 @Processor('email-analysis')
@@ -51,7 +51,7 @@ export class AnalysisProcessor extends WorkerHost {
         this.http.post<OsintResult>(`${osintUrl}/osint/email`, { email }),
       );
 
-      const score = computeScore(osint.holehe ?? [], osint.leakix ?? []);
+      const score = computeScore(osint.holehe ?? [], osint.xon ?? []);
 
       await patch('COMPLETED', {
         result: { ...osint, durationMs: Date.now() - startedAt, score },

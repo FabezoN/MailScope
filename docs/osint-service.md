@@ -9,8 +9,7 @@ Pour un email donné, le service :
 
 1. Extrait le domaine (`user@example.com` → `example.com`)
 2. Interroge **Holehe** pour détecter les plateformes où l'email est enregistré
-3. Interroge **LeakIX** pour analyser les expositions réseau du domaine
-4. Retourne un rapport structuré au job-runner
+3. Retourne un rapport structuré au job-runner
 
 > Les étapes 2 et 3 sont actuellement des **mocks**. L'intégration réelle est prévue après validation de la communication inter-services.
 
@@ -70,24 +69,6 @@ Content-Type: application/json
     { "platform": "spotify",   "exists": true,  "emailRecovery": true,  "rateLimit": false },
     { "platform": "linkedin",  "exists": false, "emailRecovery": false, "rateLimit": true  }
   ],
-  "leakix": [
-    {
-      "host": "example.com",
-      "ip": "93.184.216.34",
-      "port": 443,
-      "protocol": "https",
-      "service": "nginx/1.18.0",
-      "severity": "medium"
-    },
-    {
-      "host": "example.com",
-      "ip": "93.184.216.34",
-      "port": 80,
-      "protocol": "http",
-      "service": "nginx/1.18.0",
-      "severity": "low"
-    }
-  ]
 }
 ```
 
@@ -115,17 +96,6 @@ Content-Type: application/json
 | `rateLimit` | `boolean` | La plateforme a retourné une limite de taux (résultat non fiable) |
 
 > Les entrées avec `rateLimit: true` sont conservées dans la réponse mais **exclues du scoring** car non fiables.
-
-### Résultat LeakIX
-
-| Champ | Type | Description |
-|---|---|---|
-| `host` | `string` | Domaine ou sous-domaine exposé |
-| `ip` | `string` | Adresse IP associée |
-| `port` | `number` | Port exposé |
-| `protocol` | `string` | Protocole détecté (`http`, `https`, `ftp`...) |
-| `service` | `string` | Service et version identifiés |
-| `severity` | `string` | Niveau de sévérité : `low`, `medium`, `high`, `critical` |
 
 ---
 
@@ -155,7 +125,7 @@ ValidationPipe         ← rejette automatiquement les emails invalides (400)
 OsintController        ← reçoit le DTO validé, délègue au service
       │
       ▼
-OsintService.analyze() ← extrait le domaine, interroge Holehe + LeakIX
+OsintService.analyze() ← extrait le domaine, interroge Holehe
       │
       ▼
 JSON 200               ← rapport structuré retourné au job-runner
@@ -195,6 +165,5 @@ En mode dev, le dossier `apps/osint-service/src` est monté en volume : les modi
 | Étape | Description |
 |---|---|
 | Intégration Holehe | Exécution du CLI Python, parsing des résultats, filtrage `rateLimit` |
-| Intégration LeakIX | Appel API avec clé serveur, cache Redis des résultats par domaine |
 | Gestion des erreurs | Timeout, service indisponible, retry |
-| Tests unitaires | Parser Holehe, parser LeakIX, extraction de domaine |
+| Tests unitaires | Parser Holehe, extraction de domaine |

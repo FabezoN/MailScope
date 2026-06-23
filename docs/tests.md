@@ -85,7 +85,7 @@ Dépendances mockées : `HttpService`, `ConfigService`.
 |---|---|
 | Job traité avec succès | PATCH `PROCESSING` envoyé avant l'appel à l'osint-service |
 | Job traité avec succès | POST `/osint/email` appelé avec l'email du job |
-| Job traité avec succès | PATCH `COMPLETED` envoyé avec `result` contenant `holehe`, `leakix` et `score` calculé |
+| Job traité avec succès | PATCH `COMPLETED` envoyé avec `result` contenant `holehe` et `score` calculé |
 | Échec de l'osint-service | PATCH `FAILED` envoyé avec `errorMessage` |
 | Échec de l'osint-service | L'erreur est re-levée après le patch `FAILED` |
 

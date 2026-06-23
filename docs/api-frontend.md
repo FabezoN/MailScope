@@ -192,13 +192,11 @@ GET /api/v1/investigations/:id
       "level": "MEDIUM",
       "reasons": [
         "3 compte(s) public(s) détecté(s) : twitter, instagram, spotify",
-        "Email utilisé comme récupération sur : twitter, spotify",
-        "2 exposition(s) détectée(s) sur le domaine via LeakIX"
+        "Email utilisé comme récupération sur : twitter, spotify"
       ],
       "recommendations": [
         "Limitez la réutilisation de cet email sur des plateformes publiques",
-        "Désactivez la récupération par email sur les plateformes non critiques",
-        "Auditez les services exposés sur Internet pour votre domaine"
+        "Désactivez la récupération par email sur les plateformes non critiques"
       ]
     },
     "holehe": [
@@ -207,10 +205,6 @@ GET /api/v1/investigations/:id
       { "platform": "github",    "exists": false, "emailRecovery": false, "rateLimit": false },
       { "platform": "spotify",   "exists": true,  "emailRecovery": true,  "rateLimit": false },
       { "platform": "linkedin",  "exists": false, "emailRecovery": false, "rateLimit": true  }
-    ],
-    "leakix": [
-      { "host": "gmail.com", "ip": "93.184.216.34", "port": 443, "protocol": "https", "service": "nginx/1.18.0", "severity": "medium" },
-      { "host": "gmail.com", "ip": "93.184.216.34", "port": 80,  "protocol": "http",  "service": "nginx/1.18.0", "severity": "low"    }
     ]
   },
   "errorMessage": null,
@@ -305,7 +299,6 @@ Disponible uniquement quand `status === "COMPLETED"`.
 | `score.reasons` | string[] | Facteurs ayant contribué au score |
 | `score.recommendations` | string[] | Actions recommandées |
 | `holehe` | array | Présence sur plateformes (voir ci-dessous) |
-| `leakix` | array | Expositions réseau sur le domaine |
 
 **Entrée `holehe`**
 
@@ -315,17 +308,6 @@ Disponible uniquement quand `status === "COMPLETED"`.
 | `exists` | boolean | Compte trouvé avec cet email |
 | `emailRecovery` | boolean | Email utilisé comme récupération |
 | `rateLimit` | boolean | Résultat incertain (rate limit atteint) |
-
-**Entrée `leakix`**
-
-| Champ | Type | Description |
-|---|---|---|
-| `host` | string | Nom d'hôte |
-| `ip` | string | Adresse IP |
-| `port` | number | Port exposé |
-| `protocol` | string | Protocole (`http`, `https`, etc.) |
-| `service` | string | Service détecté |
-| `severity` | string | `low` · `medium` · `high` · `critical` |
 
 ---
 

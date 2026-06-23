@@ -172,6 +172,7 @@ services:
       target: dev
     volumes:
       - ./apps/osint-service/src:/app/apps/osint-service/src
+      - ./apps/osint-service/scripts:/app/apps/osint-service/scripts
       - ./packages:/app/packages
     ports:
       - "3001:3001"
