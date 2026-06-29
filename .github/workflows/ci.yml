@@ -55,6 +55,63 @@ jobs:
       - name: Build
         run: pnpm --filter front build
 
+      - name: Test
+        run: pnpm --filter front test
+
+  ci-auth-service:
+    name: CI Auth Service
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @mailscope/auth-service lint
+
+      - name: Build
+        run: pnpm --filter @mailscope/auth-service build
+
+      - name: Test
+        run: pnpm --filter @mailscope/auth-service test
+
+  ci-gateway:
+    name: CI Gateway
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @mailscope/gateway lint
+
+      - name: Build
+        run: pnpm --filter @mailscope/gateway build
+
+      - name: Test
+        run: pnpm --filter @mailscope/gateway test
+
   ci-investigations-service:
     name: CI Investigations Service
     needs: build
@@ -126,6 +183,9 @@ jobs:
 
       - name: Build
         run: pnpm --filter @mailscope/osint-service build
+
+      - name: Test
+        run: pnpm --filter @mailscope/osint-service test
 
   ci-api:
     name: CI API
