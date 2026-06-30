@@ -1,0 +1,193 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  auth-service-dev:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      target: dev
+    env_file: .env
+    volumes:
+      - ./apps/auth-service/src:/app/apps/auth-service/src
+      - ./apps/auth-service/seeds:/app/apps/auth-service/seeds
+      - ./packages:/app/packages
+    ports:
+      - "3002:3002"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  auth-service-build:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+      target: build
+    env_file: .env
+    ports:
+      - "3002:3002"
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - build
+
+  investigations-service-dev:
+    build:
+      context: .
+      dockerfile: apps/investigations-service/Dockerfile
+      target: dev
+    env_file: .env
+    volumes:
+      - ./apps/investigations-service/src:/app/apps/investigations-service/src
+      - ./packages:/app/packages
+    ports:
+      - "3003:3003"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      osint-service-dev:
+        condition: service_started
+
+  investigations-service-build:
+    build:
+      context: .
+      dockerfile: apps/investigations-service/Dockerfile
+      target: build
+    env_file: .env
+    ports:
+      - "3003:3003"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - build
+
+  gateway-dev:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+      target: dev
+    env_file: .env
+    volumes:
+      - ./apps/gateway/src:/app/apps/gateway/src
+      - ./packages:/app/packages
+    ports:
+      - "3000:3000"
+    depends_on:
+      auth-service-dev:
+        condition: service_started
+      investigations-service-dev:
+        condition: service_started
+
+  gateway-build:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+      target: build
+    env_file: .env
+    ports:
+      - "3000:3000"
+    profiles:
+      - build
+
+  front-dev:
+    build:
+      context: .
+      dockerfile: apps/front/Dockerfile
+      target: dev
+    volumes:
+      - ./apps/front/src:/app/apps/front/src
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+
+  front-build:
+    build:
+      context: .
+      dockerfile: apps/front/Dockerfile
+      target: prod
+    ports:
+      - "80:80"
+    profiles:
+      - build
+
+  job-runner-dev:
+    build:
+      context: .
+      dockerfile: apps/job-runner/Dockerfile
+      target: dev
+    volumes:
+      - ./apps/job-runner/src:/app/apps/job-runner/src
+      - ./packages:/app/packages
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      investigations-service-dev:
+        condition: service_started
+      osint-service-dev:
+        condition: service_started
+
+  job-runner-build:
+    build:
+      context: .
+      dockerfile: apps/job-runner/Dockerfile
+      target: build
+    profiles:
+      - build
+
+  osint-service-dev:
+    build:
+      context: .
+      dockerfile: apps/osint-service/Dockerfile
+      target: dev
+    volumes:
+      - ./apps/osint-service/src:/app/apps/osint-service/src
+      - ./apps/osint-service/scripts:/app/apps/osint-service/scripts
+      - ./packages:/app/packages
+    ports:
+      - "3001:3001"
+    env_file: .env
+
+  osint-service-build:
+    build:
+      context: .
+      dockerfile: apps/osint-service/Dockerfile
+      target: build
+    ports:
+      - "3001:3001"
+    env_file: .env
+    profiles:
+      - build
+
+volumes:
+  postgres_data:
